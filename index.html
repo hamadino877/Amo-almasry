@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>عمو المصري | قائمة الطعام</title>
+    <!-- Google Fonts + Tailwind + Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Custom override for Tailwind (to keep RTL and custom styles) -->
+    <style>
+        /* custom reset & print styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #FFFEF7;
+            font-family: 'Tajawal', sans-serif;
+            color: #2C2C2C;
+        }
+        .font-amiri {
+            font-family: 'Amiri', serif;
+        }
+        .font-tajawal {
+            font-family: 'Tajawal', sans-serif;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* custom border & card styling */
+        .card-hover:hover {
+            border-color: #8B6914 !important;
+            transition: all 0.2s ease;
+        }
+        .tab-active {
+            background-color: #8B6914 !important;
+            color: white !important;
+        }
+        .tab-inactive {
+            background-color: #F5F0E1 !important;
+            color: #555 !important;
+        }
+        /* print styles */
+        @media print {
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
+            body {
+                background-color: white !important;
+                padding: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-section {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin-bottom: 20px !important;
+                border: 1px solid #eee;
+                padding: 10px;
+                border-radius: 8px;
+            }
+            .print-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
+            }
+            header.header-print-fix {
+                position: static !important;
+                box-shadow: none !important;
+                border-bottom: 2px solid #8B6914 !important;
+                margin-bottom: 20px !important;
+            }
+            .break-avoid {
+                break-inside: avoid;
+            }
+        }
+        .transition-custom {
+            transition: all 0.2s ease;
+        }
+        .juice-icon-bg {
+            background: #FDFBF2;
+        }
+        /* fix sticky header on mobile */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body class="bg-[#FFFEF7]">
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="min-h-screen pb-20 font-tajawal">
+
+        <!-- HEADER with print button -->
+        <header class="bg-white shadow-sm sticky-header">
+            <div class="max-w-4xl mx-auto relative">
+                <!-- Print Button (no-print) -->
+                <button id="printButton" class="no-print absolute top-4 left-4 flex items-center gap-2 bg-[#8B6914] text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg active:scale-95 transition-all z-50 hover:bg-[#6B4F0E]">
+                    <i class="fas fa-print ml-1"></i>
+                    طباعة / PDF
+                </button>
+
+                <div class="text-center pt-8 pb-6 px-4 border-b-4 border-double border-[#8B6914] bg-[#FAF8F0]">
+                    <p class="font-amiri text-[#6B4F0E] text-sm mb-2">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
+                    <h1 class="font-amiri text-4xl font-bold text-[#6B4F0E]">عمو المصري</h1>
+                    <p class="text-[#777] text-xs tracking-[0.2em] uppercase mt-1">Authentic Egyptian Taste</p>
+                    <div class="flex items-center justify-center gap-3 text-[#8B6914] my-3 opacity-50">
+                        <span class="w-12 h-px bg-[#D4C5A0]"></span>
+                        <span class="text-xs">✦</span>
+                        <span class="w-12 h-px bg-[#D4C5A0]"></span>
+                    </div>
+                </div>
+
+                <!-- Controls: search & tabs (no-print) -->
+                <div class="no-print px-4 py-3 bg-white">
+                    <div class="relative mb-3 max-w-md mx-auto">
+                        <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-base"></i>
+                        <input type="text" id="searchInput" placeholder="ابحث في المنيو..." class="w-full bg-[#F9F9F9] border border-gray-200 rounded-full py-2 pr-10 pl-4 text-sm focus:ring-2 focus:ring-[#8B6914] outline-none font-tajawal">
+                    </div>
+
+                    <div id="tabsContainer" class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+                        <!-- dynamic tabs will be injected via js, but we predefine a skeleton -->
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- MENU DYNAMIC CONTENT -->
+        <main class="max-w-4xl mx-auto px-4 py-8">
+            <div id="menuContainer" class="space-y-10">
+                <!-- dynamic menu rendered here -->
+                <div class="text-center text-gray-400 py-10">جاري التحميل...</div>
+            </div>
+        </main>
+
+        <footer class="text-center py-10 opacity-60 border-t border-[#F5F0E1] max-w-4xl mx-auto">
+            <p class="font-amiri text-lg">بالهناء والشفاء</p>
+            <p class="text-xs mt-1">مطعم عمو المصري - أصل الأكل البيتي</p>
+        </footer>
+    </div>
+
+    <script>
+        // ----------------------------- MENU DATA (full copy from original) -----------------------------
+        const menuData = [
+            {
+                id: 'soups',
+                title: 'الشوربة',
+                icon: '🥣',
+                items: [
+                    { name: 'كوارع', desc: '', extras: ['🍋 ليمون'] },
+                    { name: 'لسان كباب', desc: 'لسان مع كباب متقطع فيها', extras: ['🍋 ليمون'] },
+                    { name: 'لسان سادة', desc: '', extras: ['🍋 ليمون'] },
+                    { name: 'عدس', desc: '', extras: ['🍋 ليمون', '🍞 خبز محمص'] },
+                ]
+            },
+            {
+                id: 'salads',
+                title: 'السلطات',
+                icon: '🥗',
+                items: [
+                    { name: 'سلطة بلدي', desc: '', extras: [] },
+                    { name: 'طحينة', desc: '', extras: ['🍞 2 خبز'] },
+                    { name: 'حمص', desc: '', extras: ['🍞 2 خبز'] },
+                    { name: 'بابا غنوج', desc: 'المصري', extras: ['🍞 2 خبز'] },
+                    { name: 'متبل', desc: 'بتنجان مع طحينة', extras: ['🍞 2 خبز'] },
+                    { name: 'تومية', desc: '', extras: ['🍞 2 خبز'] },
+                ]
+            },
+            {
+                id: 'hot-apps',
+                title: 'مقبلات ساخنة',
+                icon: '🔥',
+                items: [
+                    { name: 'محاشي مشكل', desc: '', extras: ['مخلل'] },
+                    { name: 'ورق عنب', desc: '', extras: ['مخلل'] },
+                    { name: 'كرنب', desc: '', extras: ['مخلل'] },
+                    { name: 'رقاق عمو المصري', desc: '', extras: ['مخلل'] },
+                    { name: 'ممبار', desc: '', extras: ['مخلل'] },
+                    { name: 'المكس المصري ⭐', desc: 'ممبار مع محاشي', extras: ['مخلل'] },
+                    { name: 'كبيبة مقلية', desc: '', extras: ['مخلل'] },
+                    { name: 'تشيز رول', desc: '', extras: ['مخلل'] },
+                    { name: 'سمبوسة جبن', desc: '', extras: ['مخلل'] },
+                    { name: 'سمبوسة خضار', desc: '', extras: ['مخلل'] },
+                ]
+            },
+            {
+                id: 'specials',
+                title: 'الأطباق المميزة',
+                icon: '👑',
+                items: [
+                    { name: 'فتة كوارع', desc: '', extras: ['مخلل', 'صوص فتة'] },
+                    { name: 'فتة موزة ضاني', desc: '', extras: ['مخلل', 'صوص فتة'] },
+                    { name: 'فتة لحم محمر', desc: '', extras: ['مخلل', 'صوص فتة'] },
+                    { name: 'حمام رز', desc: '', extras: ['مخلل', 'طحينة'] },
+                    { name: 'حمام فريك', desc: '', extras: ['مخلل', 'طحينة'] },
+                ]
+            },
+            {
+                id: 'tagines',
+                title: 'الطواجن',
+                icon: '🍲',
+                items: [
+                    { name: 'ملوخية لحم', desc: '', extras: ['مخلل', '🍞 رغيف خبز'] },
+                    { name: 'ملوخية فراخ', desc: '', extras: ['مخلل', '🍞 رغيف خبز'] },
+                    { name: 'بطاطس بالفراخ', desc: '', extras: ['مخلل', '🍞 رغيف خبز'] },
+                    { name: 'بطاطس باللحمة', desc: '', extras: ['مخلل', '🍞 رغيف خبز'] },
+                    { name: 'بسلة باللحمة', desc: '', extras: ['مخلل', '🍞 رغيف خبز'] },
+                    { name: 'بامية باللحمة', desc: '', extras: ['مخلل', '🍞 رغيف خبز'] },
+                    { name: 'مسقعة باللحمة', desc: '', extras: ['مخلل', '🍞 رغيف خبز'] },
+                    { name: 'كرنب باللحمة', desc: '', extras: ['مخلل'] },
+                    { name: 'ورق عنب كوارع', desc: '', extras: ['مخلل'] },
+                    { name: 'معمر لحمة', desc: '', extras: ['مخلل'] },
+                    { name: 'معمر سادة', desc: '', extras: ['مخلل'] },
+                    { name: 'معمر حمام', desc: '', extras: ['مخلل'] },
+                    { name: 'طاجن الأكيل ⭐', desc: 'عكاوي مع كوارع', extras: ['مخلل'] },
+                ]
+            },
+            {
+                id: 'pasta',
+                title: 'الباستا',
+                icon: '🍝',
+                items: [
+                    { name: 'مكرونة بشاميل', desc: '', extras: ['مخلل'] },
+                    { name: 'مكرونة بشاميل مع صدور مشوية', desc: '', extras: ['مخلل', 'تومية'] },
+                    { name: 'مكرونة بشاميل مع بانيه', desc: '', extras: ['مخلل', 'كاتشب'] },
+                    { name: 'مكرونة بولونيز باللحمة المفرومة', desc: '', extras: ['مخلل'] },
+                ]
+            },
+            {
+                id: 'grills',
+                title: 'المشاوي',
+                icon: '🥩',
+                note: 'تُقدم المشاوي بـ: طبق / نص كيلو / كيلو · تشمل مخلل وطحينة وخبز',
+                items: [
+                    { name: 'المكس الجامد ⭐', desc: 'مشكل مشاوي — 1 كيلو', extras: ['مخلل', 'طحينة', '🍞 خبز'] },
+                    { name: 'مشوايات عمو ⭐', desc: 'مشكل لحوم — 1.2 كيلو', extras: ['مخلل', 'طحينة', '🍞 خبز'] },
+                    { name: 'كباب وكفتة', desc: '', extras: ['مخلل', 'طحينة', '🍞 خبز'] },
+                    { name: 'كفتة وريش', desc: '', extras: ['مخلل', 'طحينة', '🍞 خبز'] },
+                    { name: 'كفتة وشيش', desc: '', extras: ['مخلل', 'طحينة', '🍞 خبز'] },
+                    { name: 'ريش وكباب', desc: '', extras: ['مخلل', 'طحينة', '🍞 خبز'] },
+                    { name: 'كفتة وطرب', desc: '', extras: ['مخلل', 'طحينة', '🍞 خبز'] },
+                    { name: 'كفتة', desc: '', extras: ['مخلل', 'طحينة', '🍞 خبز'] },
+                    { name: 'ريش', desc: '', extras: ['مخلل', 'طحينة', '🍞 خبز'] },
+                    { name: 'كباب', desc: '', extras: ['مخلل', 'طحينة', '🍞 خبز'] },
+                    { name: 'طرب', desc: '', extras: ['مخلل', 'طحينة', '🍞 خبز'] },
+                    { name: 'شيش', desc: '', extras: ['مخلل', 'تومية', '🍞 خبز'] },
+                    { name: 'نص دجاج مسحب', desc: 'نص دجاج / كامل', extras: ['مخلل', 'تومية', '🍞 خبز'] },
+                    { name: 'موزة مشوية مع ملوخية', desc: 'موزة ع رز خلطة وملوخية', extras: ['مخلل', 'طحينة', '🍞 خبز'] },
+                    { name: 'صدور دجاج مشوي', desc: '', extras: ['مخلل', 'تومية', '🍞 خبز'] },
+                    { name: 'حواوشي', desc: 'رغيف', extras: ['مخلل', 'طحينة'] },
+                ]
+            },
+            {
+                id: 'pies',
+                title: 'الفطاير',
+                icon: '🥐',
+                items: [
+                    { name: 'مشكل لحوم', desc: '', extras: ['مخلل', 'كاتشب'] },
+                    { name: 'مشكل جبن', desc: '', extras: ['مخلل', 'كاتشب'] },
+                    { name: 'سجق', desc: '', extras: ['مخلل', 'كاتشب'] },
+                    { name: 'بسطرمة', desc: '', extras: ['مخلل', 'كاتشب'] },
+                    { name: 'خضار', desc: '', extras: ['مخلل', 'كاتشب'] },
+                ],
+                subSection: {
+                    title: 'الفطاير الحلوة',
+                    icon: '🍯',
+                    items: [
+                        { name: 'بغاشة', desc: '', extras: [] },
+                        { name: 'كرفت وعسل', desc: '', extras: [] },
+                        { name: 'كستر', desc: '', extras: [] },
+                        { name: 'نوتيلا', desc: '', extras: [] },
+                    ]
+                }
+            },
+            {
+                id: 'crepes',
+                title: 'الكريب',
+                icon: '🫓',
+                items: [
+                    { name: 'كريب مشكل لحوم', desc: '', extras: ['مخلل', 'كاتشب'] },
+                    { name: 'كريب مشكل جبن', desc: '', extras: ['مخلل', 'كاتشب'] },
+                    { name: 'كريب بانيه', desc: '', extras: ['مخلل', 'كاتشب'] },
+                    { name: 'كريب شيش', desc: '', extras: ['مخلل', 'كاتشب'] },
+                    { name: 'كريب بطاطس', desc: '', extras: ['مخلل', 'كاتشب'] },
+                    { name: 'كريب نوتيلا 🍫', desc: '', extras: [] },
+                ]
+            },
+            {
+                id: 'sandwiches',
+                title: 'الساندوتشات',
+                icon: '🥙',
+                items: [
+                    { name: 'سندوتش بطاطس', desc: '', extras: ['مخلل', 'كاتشب', 'سلطة'] },
+                    { name: 'سندوتش كفتة', desc: '', extras: ['مخلل', 'طحينة', 'سلطة'] },
+                    { name: 'سندوتش كباب', desc: '', extras: ['مخلل', 'طحينة', 'سلطة'] },
+                    { name: 'سندوتش طرب', desc: '', extras: ['مخلل', 'طحينة', 'سلطة'] },
+                    { name: 'سندوتش شيش', desc: '', extras: ['مخلل', 'تومية', 'سلطة'] },
+                ]
+            },
+            {
+                id: 'juices',
+                title: 'العصائر',
+                icon: '🥤',
+                isGrid: true,
+                items: [
+                    { name: 'سوبيا', icon: '🤍' },
+                    { name: 'تمر هندي', icon: '🤎' },
+                    { name: 'كركديه', icon: '❤️' },
+                    { name: 'قمر الدين', icon: '🧡' },
+                    { name: 'مانجو', icon: '💛' },
+                    { name: 'فراولة', icon: '🍓' },
+                    { name: 'رمان', icon: '🌺' },
+                ]
+            }
+        ];
+
+        // ---------- STATE ----------
+        let activeTab = 'all';        // 'all' or category id
+        let searchQuery = '';
+        let isPrintingMode = false;   // internal flag to bypass filters while printing
+        let previousState = { activeTab: 'all', searchQuery: '' }; // save before printing
+
+        // DOM elements
+        const menuContainer = document.getElementById('menuContainer');
+        const tabsContainer = document.getElementById('tabsContainer');
+        const searchInput = document.getElementById('searchInput');
+        const printBtn = document.getElementById('printButton');
+
+        // Helper: filter categories based on activeTab & search (unless printing override)
+        function getFilteredMenu() {
+            if (isPrintingMode) {
+                // printing: show everything, ignore tabs & search
+                return menuData.map(cat => ({ ...cat }));
+            }
+            
+            let filtered = [...menuData];
+            // filter by category tab
+            if (activeTab !== 'all') {
+                filtered = filtered.filter(cat => cat.id === activeTab);
+            }
+            
+            // filter by search query (case-insensitive)
+            if (searchQuery.trim() !== '') {
+                const q = searchQuery.toLowerCase();
+                filtered = filtered.map(category => {
+                    // filter main items
+                    const matchedItems = category.items.filter(item => item.name.toLowerCase().includes(q));
+                    let matchedSub = null;
+                    if (category.subSection) {
+                        const matchedSubItems = category.subSection.items.filter(subItem => subItem.name.toLowerCase().includes(q));
+                        if (matchedSubItems.length > 0) {
+                            matchedSub = { ...category.subSection, items: matchedSubItems };
+                        }
+                    }
+                    if (matchedItems.length > 0 || matchedSub) {
+                        return {
+                            ...category,
+                            items: matchedItems,
+                            subSection: matchedSub || null
+                        };
+                    }
+                    return null;
+                }).filter(cat => cat !== null);
+            }
+            return filtered;
+        }
+
+        // function to render full menu based on current state (isPrintingMode, activeTab, search)
+        function renderMenu() {
+            const filtered = getFilteredMenu();
+            if (!filtered.length) {
+                menuContainer.innerHTML = `<div class="text-center text-gray-500 py-12">🤷‍♂️ لا توجد أصناف تطابق البحث</div>`;
+                return;
+            }
+            
+            let html = '';
+            for (const category of filtered) {
+                // category wrapper with print-section class
+                html += `<section class="print-section break-avoid mb-10">`;
+                html += `<div class="flex items-center gap-3 mb-5 pb-2 border-b-2 border-[#F5F0E1]">`;
+                html += `<span class="text-3xl">${category.icon}</span>`;
+                html += `<h2 class="font-amiri text-2xl font-bold text-[#6B4F0E]">${category.title}</h2>`;
+                html += `</div>`;
+                
+                // if note exists
+                if (category.note) {
+                    html += `<div class="mb-4 p-3 bg-amber-50 border-r-4 border-amber-500 text-amber-900 text-xs italic flex items-center gap-2"><i class="fas fa-info-circle text-amber-600"></i> ${category.note}</div>`;
+                }
+                
+                // items grid: check isGrid property (for juices)
+                const isGridStyle = category.isGrid === true;
+                const gridClass = isGridStyle ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3" : "grid grid-cols-1 md:grid-cols-2 gap-4 print-grid";
+                html += `<div class="${gridClass}">`;
+                
+                for (const item of category.items) {
+                    if (isGridStyle) {
+                        // juices: icon + name only (like original)
+                        const juiceIcon = item.icon || '🥤';
+                        html += `<div class="bg-white border border-[#EBE3CD] rounded-xl p-4 text-center transition-all hover:border-[#8B6914] card-hover">`;
+                        html += `<div class="text-3xl mb-2">${juiceIcon}</div>`;
+                        html += `<div class="font-bold text-sm">${item.name}</div>`;
+                        html += `</div>`;
+                    } else {
+                        // regular item card
+                        html += `<div class="bg-white border border-[#EBE3CD] rounded-xl p-4 transition-all hover:border-[#8B6914] card-hover flex flex-col">`;
+                        html += `<div class="font-bold text-[#2C2C2C] mb-1">${item.name}</div>`;
+                        if (item.desc) {
+                            html += `<p class="text-xs text-gray-500 mb-2 leading-relaxed">${item.desc}</p>`;
+                        }
+                        if (item.extras && item.extras.length > 0) {
+                            html += `<div class="flex flex-wrap gap-1 mt-auto pt-1">`;
+                            for (const ex of item.extras) {
+                                html += `<span class="text-[10px] bg-[#FDFBF2] border border-[#D4C5A0] px-1.5 py-0.5 rounded text-gray-600">${ex}</span>`;
+                            }
+                            html += `</div>`;
+                        }
+                        html += `</div>`;
+                    }
+                }
+                html += `</div>`;
+                
+                // Subsection if exists (like sweet pies)
+                if (category.subSection && (!searchQuery.trim() || (category.subSection.items.length > 0))) {
+                    const sub = category.subSection;
+                    html += `<div class="mt-8 pt-6 border-t border-dashed border-[#D4C5A0]">`;
+                    html += `<h3 class="font-amiri text-xl font-bold text-[#6B4F0E] mb-4 flex items-center gap-2">`;
+                    html += `<span>${sub.icon || '🍯'}</span> ${sub.title}</h3>`;
+                    html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 print-grid">`;
+                    for (const subItem of sub.items) {
+                        html += `<div class="bg-white border border-[#EBE3CD] rounded-xl p-3 font-bold text-sm">${subItem.name}</div>`;
+                    }
+                    html += `</div></div>`;
+                }
+                
+                html += `</section>`;
+            }
+            menuContainer.innerHTML = html;
+        }
+        
+        // build tabs dynamically from menuData
+        function buildTabs() {
+            let tabsHtml = `<button data-tab="all" class="tab-btn whitespace-nowrap px-5 py-2 rounded-full text-sm font-bold transition-all ${activeTab === 'all' ? 'tab-active' : 'tab-inactive'}">الكل</button>`;
+            for (const cat of menuData) {
+                const isActive = activeTab === cat.id;
+                tabsHtml += `<button data-tab="${cat.id}" class="tab-btn whitespace-nowrap flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all ${isActive ? 'tab-active' : 'tab-inactive'}">
+                                <span>${cat.icon}</span> ${cat.title}
+                            </button>`;
+            }
+            tabsContainer.innerHTML = tabsHtml;
+            // attach click events to tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (isPrintingMode) return;
+                    const tabId = btn.getAttribute('data-tab');
+                    activeTab = tabId;
+                    // re-render tabs style and menu
+                    buildTabs();   // refresh active style
+                    renderMenu();
+                });
+            });
+        }
+        
+        // handle search input
+        function bindSearch() {
+            searchInput.addEventListener('input', (e) => {
+                if (isPrintingMode) return;
+                searchQuery = e.target.value;
+                renderMenu();
+                // optionally, keep tabs active style as is, but no need to rebuild tabs
+            });
+        }
+        
+        // ---------- PRINT LOGIC (full override, then restore) ----------
+        async function handlePrint() {
+            // save current state
+            previousState = {
+                activeTab: activeTab,
+                searchQuery: searchQuery
+            };
+            
+            // enable printing mode: override filters to show all categories and no search
+            isPrintingMode = true;
+            // force refresh menu (show all)
+            renderMenu();
+            
+            // small delay to ensure DOM is updated with full menu for print
+            setTimeout(() => {
+                window.print();
+                // after print dialog, restore previous state
+                setTimeout(() => {
+                    isPrintingMode = false;
+                    activeTab = previousState.activeTab;
+                    searchQuery = previousState.searchQuery;
+                    // update search input value
+                    searchInput.value = searchQuery;
+                    // rebuild tabs and render menu with restored filters
+                    buildTabs();
+                    renderMenu();
+                }, 100);
+            }, 200);
+        }
+        
+        // initial load & event binding
+        function init() {
+            buildTabs();
+            bindSearch();
+            renderMenu();
+            printBtn.addEventListener('click', handlePrint);
+        }
+        
+        // start everything
+        init();
+    </script>
+</body>
+</html>
